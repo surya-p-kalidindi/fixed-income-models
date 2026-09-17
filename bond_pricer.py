@@ -45,7 +45,7 @@ def macaulay_duration(face, coupon_rate, maturity, ytm, frequency):
 
     pv = 0
 
-    weignted_pv = 0
+    weighted_pv = 0
 
     coupon_payment = face * coupon_rate / frequency
 
@@ -69,3 +69,51 @@ def macaulay_duration(face, coupon_rate, maturity, ytm, frequency):
 
 dur = macaulay_duration(1000, 0.05, 3, 0.05, 2)
 print(dur)
+
+
+
+def modified_duration(face, coupon_rate, maturity, ytm, frequency):
+    # This function calculates the modified duration of a bond.
+    # The modified duration is calculated as the Macaulay duration divided by (1 + (ytm / frequency)).
+    
+    macaulay_dur = macaulay_duration(face, coupon_rate, maturity, ytm, frequency)
+    mod_duration = macaulay_dur / (1 + (ytm / frequency))
+    
+    return mod_duration
+
+mod_dur = modified_duration(1000, 0.05, 3, 0.05, 2)
+print(mod_dur)
+
+
+def dv01(face, coupon_rate, maturity, ytm, frequency):
+
+    # This function calculates the DV01 (Dollar Value of 01) of a bond.
+    # DV01 is the change in the price of a bond for a 1 basis point change in yield.
+    
+    original_price = bond_price(face, coupon_rate, maturity, ytm, frequency)
+    
+    # Calculate the price of the bond with a 1 basis point increase in yield
+    new_ytm = ytm + 0.0001
+    new_price = bond_price(face, coupon_rate, maturity, new_ytm, frequency)
+    
+    dv01_value = original_price - new_price
+    
+    return dv01_value
+
+dv01_val = dv01(1000, 0.05, 3, 0.05, 2)
+print(dv01_val)
+
+
+def dv01_duration(face, coupon_rate, maturity, ytm, frequency):
+    # This function calculates the DV01 using the modified duration of a bond.
+    # DV01 can also be approximated as the product of the modified duration and the price of the bond, divided by 10000.
+    
+    mod_dur = modified_duration(face, coupon_rate, maturity, ytm, frequency)
+    price = bond_price(face, coupon_rate, maturity, ytm, frequency)
+    
+    dv01_value = (mod_dur * price) / 10000
+    
+    return dv01_value 
+
+dv01_duration_val = dv01_duration(1000, 0.05, 3, 0.05, 2)
+print(dv01_duration_val)
