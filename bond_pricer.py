@@ -226,14 +226,45 @@ print(
 )
 
 curvature_numerator = (price_down + price_up - 2 * price_spot_curve)
-effective_convexity = curvature_numerator / (price_spot_curve * 0.01 ** 2)
-print(f"Effective convexity based on shocked yield curve: {effective_convexity:.6f}")
+effective_convexity = curvature_numerator / (
+    price_spot_curve * shock_decimal ** 2
+)
 
-
-assert abs(bond_price(1000, 0.05, 3, 0.05, 2) - 1000) < 0.01
+# Financial identity checks
+assert abs(
+    bond_price(1000, 0.05, 3, 0.05, 2) - 1000
+) < 0.01
 
 assert abs(
     yield_to_maturity(1000, 0.05, 3, 1000, 2) - 0.05
-) < 0.000001
+) < 1e-6
 
-print("Bond price and YTM assertions passed")
+
+# Known-value checks
+assert abs(
+    macaulay_duration(1000, 0.05, 3, 0.05, 2) - 2.8229
+) < 1e-3
+
+assert abs(
+    modified_duration(1000, 0.05, 3, 0.05, 2) - 2.7541
+) < 1e-3
+
+assert abs(
+    dv01_duration(1000, 0.05, 3, 0.05, 2) - 0.27541
+) < 1e-4
+
+assert abs(
+    convexity_value(1000, 0.05, 3, 0.05, 2) - 9.2107
+) < 1e-2
+
+
+# Independent-method agreement checks
+assert abs(
+    dv01_val - dv01_duration_val
+) < 1e-4
+
+assert abs(
+    convexity_value(1000, 0.05, 3, 0.05, 2) - convexity_approx
+) < 1e-2
+
+print("All Sprint 1 assertions passed")
