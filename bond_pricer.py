@@ -216,9 +216,24 @@ print(f"Price with shocked yield curve: {price_down:.2f}")
 curve_price_change = price_down - price_spot_curve
 print(f"Price change due to shocked yield curve: {curve_price_change:.2f}")
 
-effective_duration = (price_down - price_up) / (price_spot_curve * 0.02)
-print(f"Effective duration based on shocked yield curve: {effective_duration:.6f}")
+effective_duration = (price_down - price_up) / (
+    price_spot_curve * 2 * shock_decimal
+)
+
+print(
+    f"Effective duration based on shocked yield curve: "
+    f"{effective_duration:.6f}"
+)
 
 curvature_numerator = (price_down + price_up - 2 * price_spot_curve)
 effective_convexity = curvature_numerator / (price_spot_curve * 0.01 ** 2)
 print(f"Effective convexity based on shocked yield curve: {effective_convexity:.6f}")
+
+
+assert abs(bond_price(1000, 0.05, 3, 0.05, 2) - 1000) < 0.01
+
+assert abs(
+    yield_to_maturity(1000, 0.05, 3, 1000, 2) - 0.05
+) < 0.000001
+
+print("Bond price and YTM assertions passed")
