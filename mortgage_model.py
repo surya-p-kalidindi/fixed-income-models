@@ -34,48 +34,58 @@ def mortgage_schedule_with_prepayment(
     years,
     cpr
 ):
-
     frequency = 12
-    months = int(years * frequency)
-    monthly_rate = annual_rate / frequency
     smm = 1 - (1 - cpr) ** (1 / frequency)
 
+    original_schedule = mortgage_schedule(
+        principal,
+        annual_rate,
+        years
+    )
+
     schedule = []
-    balance = principal
+    survivor_factor = 1.0
 
-    for month in range(1, months + 1):
-        beginning_balance = balance
-        remaining_months = months - month + 1
+    for original_row in original_schedule:
+        month = original_row["month"]
 
-
-        payment = beginning_balance * (
-            monthly_rate * (1 + monthly_rate) ** remaining_months
-        ) / (
-            (1 + monthly_rate) ** remaining_months - 1
+        beginning_balance = (
+            original_row["beginning_balance"]
+            * survivor_factor
         )
 
-        scheduled_interest = beginning_balance * monthly_rate
-        scheduled_principal = payment - scheduled_interest
+        scheduled_interest = (
+            original_row["scheduled_interest"]
+            * survivor_factor
+        )
+
+        scheduled_principal = (
+            original_row["scheduled_principal"]
+            * survivor_factor
+        )
 
         balance_after_scheduled_principal = (
-            beginning_balance - scheduled_principal
+            original_row["ending_balance"]
+            * survivor_factor
         )
 
-        prepayment = balance_after_scheduled_principal * smm
+        prepayment = (
+            balance_after_scheduled_principal
+            * smm
+        )
 
         ending_balance = (
-            balance_after_scheduled_principal - prepayment
+            balance_after_scheduled_principal
+            - prepayment
         )
 
         if abs(ending_balance) < 0.01:
             ending_balance = 0.0
 
-        balance = ending_balance
-
         schedule.append({
             "month": month,
+            "survivor_factor": survivor_factor,
             "beginning_balance": beginning_balance,
-            "payment": payment,
             "scheduled_interest": scheduled_interest,
             "scheduled_principal": scheduled_principal,
             "balance_after_scheduled_principal":
@@ -84,8 +94,7 @@ def mortgage_schedule_with_prepayment(
             "ending_balance": ending_balance,
         })
 
-        if balance == 0.0:
-            break
+        survivor_factor *= (1 - smm)
 
     return schedule
 
